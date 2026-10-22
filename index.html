@@ -1,0 +1,72 @@
+
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TikTok Sandıq Saytı</title>
+<style>
+body {
+  margin: 0;
+  padding: 20px;
+  background: #0b1020;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+h1 { color: #35e0ee; text-align: center; }
+.panel, .item {
+  background: #171f35;
+  padding: 16px;
+  border-radius: 12px;
+  margin: 12px 0;
+}
+.muted { color: #b9c4dc; }
+</style>
+</head>
+<body>
+<h1>🔴 TikTok LIVE Monitor</h1>
+
+<div class="panel">
+  <h3>İzlənən hesablar</h3>
+  <div id="accounts" class="muted">Yüklənir...</div>
+</div>
+
+<div class="panel">
+  <h3>📦 Sandıq hadisələri</h3>
+  <div id="events" class="muted">Hadisələr gözlənilir...</div>
+</div>
+
+<script>
+function safeText(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;',
+    '"':'&quot;', "'":'&#39;'
+  }[c]));
+}
+
+async function yenile() {
+  try {
+    const a = await fetch('/api/accounts');
+    const accounts = await a.json();
+    document.getElementById('accounts').innerHTML =
+      accounts.length
+      ? accounts.map(n => `<div class="item">@${safeText(n)}</div>`).join('')
+      : 'Hələ hesab əlavə edilməyib.';
+
+    const r = await fetch('/api/events');
+    const events = await r.json();
+    document.getElementById('events').innerHTML =
+      events.length
+      ? events.map(e => `<div class="item">📦 @${safeText(e.username)} — ${safeText(e.type)}<br><small>${safeText(e.time)}</small></div>`).join('')
+      : 'Hələ sandıq hadisəsi gəlməyib.';
+  } catch (e) {
+    document.getElementById('events').textContent =
+      'Serverə qoşulmaq mümkün olmadı.';
+  }
+}
+
+yenile();
+setInterval(yenile, 3000);
+</script>
+</body>
+</html>
